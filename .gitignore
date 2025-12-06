@@ -1,0 +1,63 @@
+# =========================
+# Node
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.package-lock.json
+
+# =========================
+# Environment files
+# =========================
+# .env
+# .env.local
+# .env.development.local
+# .env.test.local
+# .env.production.local
+
+# =========================
+# Build outputs
+# =========================
+dist/
+build/
+.cache/
+
+# =========================
+# Editor / IDE
+# =========================
+.vscode/
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# =========================
+# OS
+# =========================
+Thumbs.db
+.DS_Store
+
+# =========================
+# Vue / Vite / Nuxt
+# =========================
+.nuxt
+.vite
+.vite-ssg
+.eslintcache
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+
+# =========================
+# Optional – uploads & temp
+# =========================
+uploads/
+tmp/
+temp/
