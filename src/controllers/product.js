@@ -17,3 +17,19 @@ exports.addProduct = async (req, res) => {
         })
     }
 }
+
+// get all products
+exports.getAllProduct = async (req, res) => {
+    try {
+        const products = await Product.find()
+        res.status(201).json({
+            success: true,
+            data: products
+        })
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
