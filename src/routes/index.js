@@ -5,6 +5,7 @@ const router = express.Router()
 router.use("/users", require("./user"))
 router.use("/product",require("./product"))
 router.use("/stock", require("./stock"))
+router.use("/batch",require('./batch'))
 
 
 module.exports = router
