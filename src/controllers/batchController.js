@@ -160,6 +160,15 @@ export const editBatch = async (req, res) => {
 
 export const getBatches = async (req, res) => {
     try {
+        const { batchCode } = req.query;
+
+        if (batchCode) {
+            const batch = await Batch.findOne({ batchCode: batchCode })
+                .populate("usedMaterials.material", "name defaultUnit");
+
+            return res.json({ success: true, batch });
+        }
+
         const batches = await Batch.find()
             .populate("usedMaterials.material", "name defaultUnit")
             .sort({ createdAt: -1 });
@@ -169,3 +178,4 @@ export const getBatches = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+

@@ -6,6 +6,7 @@ router.use("/users", require("./user"))
 router.use("/product",require("./product"))
 router.use("/stock", require("./stock"))
 router.use("/batch",require('./batch'))
+router.use("/emptyBottle",require("./emptyBottle"))
 
 
 module.exports = router

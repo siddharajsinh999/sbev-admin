@@ -8,6 +8,12 @@ const stockSchema = new mongoose.Schema({
     required: true
   },
 
+  bottle: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "EmptyBottle",
+    required: false // make true if stock must always be linked to a bottle
+  },
+
   type: {
     type: String,
     enum: ["500_ml", "1_liter", "5_liter", "10_liter"],
