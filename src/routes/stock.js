@@ -10,6 +10,7 @@ router.post("/add",uploadImage.single("image"),stockController.addStock);
 router.post("/dispatch", stockController.dispatchStock)
 router.get("/", stockController.getAllStock);
 router.get("/history/:productId", stockController.getStockHistory);
+router.get("/export/excel", stockController.exportStockExcel);
 
 
 module.exports = router
