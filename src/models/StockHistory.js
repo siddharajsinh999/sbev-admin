@@ -33,6 +33,12 @@ const stockHistorySchema = new mongoose.Schema({
     type: String     // only for DISPATCH
   },
 
+  batch: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Batch",
+    required: false
+  },
+
   date: {
     type: Date,
     default: Date.now

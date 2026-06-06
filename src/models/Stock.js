@@ -35,6 +35,12 @@ const stockSchema = new mongoose.Schema({
     required: false
   },
 
+  batch: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Batch",
+    required: false
+  },
+
   minLevel: {
     type: Number,
     default: 10   // for "Low" / "Very Low" badge

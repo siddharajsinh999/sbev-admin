@@ -20,6 +20,39 @@ const usedMaterialSchema = new mongoose.Schema(
     { _id: false }
 );
 
+const outputBreakdownSchema = new mongoose.Schema(
+    {
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+            required: true,
+        },
+        productType: {
+            type: String,
+            required: true,
+        },
+        emptyBottle: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "EmptyBottle",
+            required: true,
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            min: 0,
+        },
+        notes: {
+            type: String,
+        },
+        stockHistory: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "StockHistory",
+            required: false,
+        },
+    },
+    { _id: false }
+);
+
 const batchSchema = new mongoose.Schema(
     {
         batchCode: {
@@ -51,6 +84,7 @@ const batchSchema = new mongoose.Schema(
             default: "Pending",
         },
         usedMaterials: [usedMaterialSchema],
+        outputBreakdowns: [outputBreakdownSchema],
     },
     { timestamps: true }
 );

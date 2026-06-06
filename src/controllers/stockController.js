@@ -2,12 +2,17 @@
 import Stock from "../models/Stock.js";
 import StockHistory from "../models/StockHistory.js";
 import EmptyBottle from "../models/EmptyBottle.js";
+import Batch from "../models/Batch.js";
+import mongoose from "mongoose";
 
 import ExcelJS from "exceljs";
 
 
 
 export const addStock = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
         const {
             productId,
@@ -15,7 +20,8 @@ export const addStock = async (req, res) => {
             quantity,
             notes,
             date,
-            bottleId // 🔹 Empty bottle reference
+            bottleId, // 🔹 Empty bottle reference
+            batch // 🔹 Optional Batch reference
         } = req.body;
 
         let image = null;
@@ -26,36 +32,32 @@ export const addStock = async (req, res) => {
         const qty = Number(quantity);
 
         if (qty <= 0) {
-            return res.status(400).json({ message: "Quantity must be greater than 0" });
+            throw new Error("Quantity must be greater than 0");
         }
 
         // 🧴 Find Empty Bottle
-        const emptyBottle = await EmptyBottle.findById(bottleId);
+        const emptyBottle = await EmptyBottle.findById(bottleId).session(session);
 
         if (!emptyBottle) {
-            return res.status(404).json({ message: "Empty bottle not found" });
+            throw new Error("Empty bottle not found");
         }
 
         // ❗ Type validation
         if (emptyBottle.type !== type) {
-            return res.status(400).json({
-                message: "Bottle type does not match stock type"
-            });
+            throw new Error("Bottle type does not match stock type");
         }
 
         // ❗ Quantity check
         if (emptyBottle.quantity < qty) {
-            return res.status(400).json({
-                message: `Only ${emptyBottle.quantity} empty bottles available`
-            });
+            throw new Error(`Only ${emptyBottle.quantity} empty bottles available`);
         }
 
         // 🔻 Deduct bottle quantity
         emptyBottle.quantity -= qty;
-        await emptyBottle.save();
+        await emptyBottle.save({ session });
 
         // 📦 Find or create stock
-        let stock = await Stock.findOne({ product: productId, type });
+        let stock = await Stock.findOne({ product: productId, type }).session(session);
 
         if (!stock) {
             stock = new Stock({
@@ -63,32 +65,65 @@ export const addStock = async (req, res) => {
                 type,
                 bottle: bottleId, // 🔗 Attach bottle
                 quantity: 0,
-                image
+                image,
+                batch: batch || null
             });
+        } else if (batch) {
+            stock.batch = batch;
         }
 
         stock.quantity += qty;
-        await stock.save();
+        await stock.save({ session });
 
         // 🧾 Stock history
-        await StockHistory.create({
-            product: productId,
-            type,
-            action: "ADD",
-            quantity: qty,
-            notes,
-            date,
-            bottle: bottleId
-        });
+        const history = await StockHistory.create(
+            [
+                {
+                    product: productId,
+                    type,
+                    action: "ADD",
+                    quantity: qty,
+                    notes,
+                    date: date || new Date(),
+                    bottle: bottleId,
+                    batch: batch || null
+                },
+            ],
+            { session }
+        );
+
+        const stockHistoryId = history[0]._id;
+
+        // 🔗 Sync with Batch Output Breakdown
+        if (batch) {
+            const batchDoc = await Batch.findById(batch).session(session);
+            if (batchDoc) {
+                batchDoc.outputBreakdowns.push({
+                    product: productId,
+                    productType: type,
+                    emptyBottle: bottleId,
+                    quantity: qty,
+                    notes: notes || "Added manually via Stock Module",
+                    stockHistory: stockHistoryId
+                });
+                await batchDoc.save({ session });
+            }
+        }
+
+        await session.commitTransaction();
+        session.endSession();
 
         res.json({
-            message: "Stock added & empty bottle deducted successfully",
+            success: true,
+            message: "Stock added & batch production history updated successfully",
             stock,
             remainingBottleQty: emptyBottle.quantity
         });
 
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        await session.abortTransaction();
+        session.endSession();
+        res.status(400).json({ success: false, message: error.message });
     }
 };
 
