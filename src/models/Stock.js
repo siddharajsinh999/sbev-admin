@@ -16,7 +16,7 @@ const stockSchema = new mongoose.Schema({
 
   type: {
     type: String,
-    enum: ["500_ml", "1_liter", "5_liter", "10_liter"],
+    enum: ["200_ml","500_ml", "1_liter", "5_liter", "10_liter"],
     required: true
   },
 
